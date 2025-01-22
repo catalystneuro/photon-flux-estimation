@@ -113,8 +113,13 @@ class PhotonFluxEstimator:
         # Convert to float to avoid integer division
         movie = self.movie.astype(np.float32)
         
-        # Compute photon flux
-        self.photon_flux = (movie - self.zero_level) / self.sensitivity
+        # Compute photon flux by removing the zero level and any spatial gradient
+        # We estimate the gradient by taking the mean over time
+        mean_frame = np.mean(movie, axis=2, keepdims=True)
+        movie_detrended = movie - (mean_frame - np.mean(mean_frame))
+        
+        # Now compute photon flux using the detrended movie
+        self.photon_flux = (movie_detrended - self.zero_level) / self.sensitivity
         
         return self.photon_flux
     
