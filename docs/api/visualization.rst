@@ -16,8 +16,6 @@ Plotting Functions
 
 .. autofunction:: plot_photon_flux
 
-.. autofunction:: plot_sensitivity_analysis
-
 Internal Functions
 ----------------
 
