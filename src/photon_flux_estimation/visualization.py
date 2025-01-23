@@ -7,10 +7,10 @@ import colorcet as cc
 
 def _create_figure(title: str = None) -> tuple:
     """Create a figure and axis with common styling.
-    
+
     Args:
         title: Optional title for the figure
-        
+
     Returns:
         tuple: (figure, axis) matplotlib objects
     """
@@ -22,7 +22,7 @@ def _create_figure(title: str = None) -> tuple:
 
 def _add_colorbar(ax, im, ticks=None, labels=None):
     """Add a colorbar to the plot with optional custom ticks and labels.
-    
+
     Args:
         ax: matplotlib axis
         im: matplotlib image object
@@ -38,114 +38,122 @@ def _add_colorbar(ax, im, ticks=None, labels=None):
 
 def plot_average_intensity(movie: np.ndarray, title: str = None, save_path: str = None):
     """Plot average intensity across all frames.
-    
+
     Args:
         movie: Input movie data in format (height, width, time)
         title: Optional title for the figure
         save_path: Optional path to save the figure
-        
+
     Returns:
         matplotlib.figure.Figure: The generated figure object
     """
     fig, ax = _create_figure(title)
-    
+
     m = movie.mean(axis=0)
-    im = ax.imshow(m, vmin=0, vmax=np.quantile(m, 0.999), cmap='gray')
+    im = ax.imshow(m, vmin=0, vmax=np.quantile(m, 0.999), cmap="gray")
     ax.axis(False)
     _add_colorbar(ax, im)
-    ax.set_title('Average Intensity')
-    
+    ax.set_title("Average Intensity")
+
     if save_path:
-        fig.savefig(save_path, dpi=300, bbox_inches='tight')
-    
+        fig.savefig(save_path, dpi=300, bbox_inches="tight")
+
     return fig
 
 
 def plot_photon_transfer_curve(results: dict, title: str = None, save_path: str = None):
     """Plot photon transfer curve showing intensity vs variance relationship.
-    
+
     Args:
         results: Dictionary of results from compute_sensitivity()
         title: Optional title for the figure
         save_path: Optional path to save the figure
-        
+
     Returns:
         matplotlib.figure.Figure: The generated figure object
     """
     fig, ax = _create_figure(title)
-    
+
     x = np.arange(results["min_intensity"], results["max_intensity"])
     fit = results["model"].predict(x.reshape(-1, 1))
-    ax.scatter(x, np.minimum(fit[-1]*2, results["variance"]), s=2, color="black", alpha=0.5)
-    ax.plot(x, fit, 'r')
-    ax.grid(True)
-    ax.set_xlabel('Intensity')
-    ax.set_ylabel('Variance')
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.set_title('Photon Transfer Curve')
-    
-    if save_path:
-        fig.savefig(save_path, dpi=300, bbox_inches='tight')
-    
-    return fig
-
-
-def plot_coefficient_variation(movie: np.ndarray, results: dict, title: str = None, save_path: str = None):
-    """Plot coefficient of variation visualization.
-    
-    Args:
-        movie: Input movie data in format (height, width, time)
-        results: Dictionary of results from compute_sensitivity()
-        title: Optional title for the figure
-        save_path: Optional path to save the figure
-        
-    Returns:
-        matplotlib.figure.Figure: The generated figure object
-    """
-    fig, ax = _create_figure(title)
-    
-    q = results['sensitivity']
-    b = results['zero_level']
-    m = movie.mean(axis=0)
-    v = ((movie[1:,:,:].astype('float64') - movie[:-1,:,:]) ** 2/2).mean(axis=0)
-    imx = np.stack(((m-b)/q, v/q/q, (m-b)/q), axis=-1)
-    im = ax.imshow(
-        np.minimum(1, np.sqrt(0.01 + np.maximum(0, imx/np.quantile(imx, 0.9999))) - 0.1),
-        cmap='PiYG'
+    ax.scatter(
+        x, np.minimum(fit[-1] * 2, results["variance"]), s=2, color="black", alpha=0.5
     )
-    _add_colorbar(ax, im, ticks=[0.2, .5, 0.8], labels=['<< 1', '1', '>> 1'])
-    ax.axis(False)
-    ax.set_title('Coefficient of Variation')
-    
+    ax.plot(x, fit, "r")
+    ax.grid(True)
+    ax.set_xlabel("Intensity")
+    ax.set_ylabel("Variance")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.set_title("Photon Transfer Curve")
+
     if save_path:
-        fig.savefig(save_path, dpi=300, bbox_inches='tight')
-    
+        fig.savefig(save_path, dpi=300, bbox_inches="tight")
+
     return fig
 
 
-def plot_photon_flux(movie: np.ndarray, results: dict, title: str = None, save_path: str = None):
-    """Plot photon flux estimation.
-    
+def plot_coefficient_variation(
+    movie: np.ndarray, results: dict, title: str = None, save_path: str = None
+):
+    """Plot coefficient of variation visualization.
+
     Args:
         movie: Input movie data in format (height, width, time)
         results: Dictionary of results from compute_sensitivity()
         title: Optional title for the figure
         save_path: Optional path to save the figure
-        
+
     Returns:
         matplotlib.figure.Figure: The generated figure object
     """
     fig, ax = _create_figure(title)
-    
-    im = (movie.mean(axis=0)-results['zero_level'])/results['sensitivity']
+
+    q = results["sensitivity"]
+    b = results["zero_level"]
+    m = movie.mean(axis=0)
+    v = ((movie[1:, :, :].astype("float64") - movie[:-1, :, :]) ** 2 / 2).mean(axis=0)
+    imx = np.stack(((m - b) / q, v / q / q, (m - b) / q), axis=-1)
+    im = ax.imshow(
+        np.minimum(
+            1, np.sqrt(0.01 + np.maximum(0, imx / np.quantile(imx, 0.9999))) - 0.1
+        ),
+        cmap="PiYG",
+    )
+    _add_colorbar(ax, im, ticks=[0.2, 0.5, 0.8], labels=["<< 1", "1", ">> 1"])
+    ax.axis(False)
+    ax.set_title("Coefficient of Variation")
+
+    if save_path:
+        fig.savefig(save_path, dpi=300, bbox_inches="tight")
+
+    return fig
+
+
+def plot_photon_flux(
+    movie: np.ndarray, results: dict, title: str = None, save_path: str = None
+):
+    """Plot photon flux estimation.
+
+    Args:
+        movie: Input movie data in format (height, width, time)
+        results: Dictionary of results from compute_sensitivity()
+        title: Optional title for the figure
+        save_path: Optional path to save the figure
+
+    Returns:
+        matplotlib.figure.Figure: The generated figure object
+    """
+    fig, ax = _create_figure(title)
+
+    im = (movie.mean(axis=0) - results["zero_level"]) / results["sensitivity"]
     mx = np.quantile(im, 0.999)
     im = ax.imshow(im, vmin=-mx, vmax=mx, cmap=cc.cm.CET_D13)
     _add_colorbar(ax, im)
     ax.axis(False)
-    ax.set_title('Photon Flux\n(photons/pixel/frame)')
-    
+    ax.set_title("Photon Flux\n(photons/pixel/frame)")
+
     if save_path:
-        fig.savefig(save_path, dpi=300, bbox_inches='tight')
-    
+        fig.savefig(save_path, dpi=300, bbox_inches="tight")
+
     return fig
