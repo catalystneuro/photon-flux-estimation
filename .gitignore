@@ -25,10 +25,6 @@ wheels/
 notebooks/cache/
 notebooks/figures/
 
-# Test data and results
-figures
-tests/testdata/movie1.npz
-
 # Virtual Environment
 venv/
 env/
