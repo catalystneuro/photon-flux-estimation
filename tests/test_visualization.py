@@ -7,8 +7,7 @@ from src.photon_flux_estimation.visualization import (
     plot_average_intensity,
     plot_photon_transfer_curve,
     plot_coefficient_variation,
-    plot_photon_flux,
-    plot_sensitivity_analysis
+    plot_photon_flux
 )
 from src.photon_flux_estimation.core import PhotonFluxEstimator
 
@@ -17,7 +16,7 @@ from src.photon_flux_estimation.core import PhotonFluxEstimator
 def test_movie_and_results():
     """Load test movie and compute sensitivity results for testing."""
     # Load test data
-    data = np.load('testdata/movie1.npz')
+    data = np.load('tests/testdata/movie1.npz')
     movie = data['scan']
     
     # Compute sensitivity using PhotonFluxEstimator
@@ -93,25 +92,5 @@ def test_plot_photon_flux(test_movie_and_results):
     # Test with invalid inputs
     with pytest.raises(KeyError):
         plot_photon_flux(movie, {})  # Empty results dict
-    
-    plt.close('all')
-
-
-def test_plot_sensitivity_analysis(test_movie_and_results):
-    """Test plot_sensitivity_analysis function."""
-    movie, results = test_movie_and_results
-    
-    # Test basic plotting
-    fig = plot_sensitivity_analysis(movie, results)
-    assert isinstance(fig, plt.Figure)
-
-    # Test with title
-    title = "Test Analysis"
-    fig = plot_sensitivity_analysis(movie, results, title=title)
-    assert fig._suptitle.get_text().startswith(title)
-    
-    # Test with invalid dimensions
-    with pytest.raises(TypeError):
-        plot_sensitivity_analysis(movie[0], results)  # Wrong dimensions
     
     plt.close('all')

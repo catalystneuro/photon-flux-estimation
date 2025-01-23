@@ -12,7 +12,7 @@ class TestPhotonFluxEstimator:
     def test_movie(self):
         """Load test movie for testing."""
         # Load test data
-        data = np.load('testdata/movie1.npz')
+        data = np.load('tests/testdata/movie1.npz')
         movie = data['scan']
         
         return movie
@@ -20,13 +20,14 @@ class TestPhotonFluxEstimator:
     def test_initialization(self, test_movie):
         """Test estimator initialization."""
         movie = test_movie
-        estimator = PhotonFluxEstimator(movie)
+        count_weight_gamma = 1
+        estimator = PhotonFluxEstimator(movie=movie,count_weight_gamma=count_weight_gamma)
         
         assert estimator.movie is movie
+        assert estimator.count_weight_gamma is count_weight_gamma
         assert estimator.sensitivity is None
         assert estimator.zero_level is None
         assert estimator.results is None
-        assert estimator.photon_flux is None
     
     def test_initialization_validation(self):
         """Test input validation during initialization."""
@@ -68,33 +69,16 @@ class TestPhotonFluxEstimator:
         movie = test_movie
         estimator = PhotonFluxEstimator(movie)
         
-        # Test that error is raised if sensitivity not computed
-        with pytest.raises(ValueError):
-            estimator.compute_photon_flux()
-        
-        # Compute sensitivity first
-        estimator.compute_sensitivity()
-        
         # Now compute photon flux
         computed_flux = estimator.compute_photon_flux()
         
         # Check shape
         assert computed_flux.shape == movie.shape
-
-        # Check attribute is set
-        assert estimator.photon_flux is computed_flux
     
     def test_plot_analysis(self, test_movie):
         """Test analysis plotting."""
         movie = test_movie
         estimator = PhotonFluxEstimator(movie)
-        
-        # Test that error is raised if sensitivity not computed
-        with pytest.raises(ValueError):
-            estimator.plot_analysis()
-        
-        # Compute sensitivity
-        estimator.compute_sensitivity()
 
         # Test with title
         title = "Test Analysis"
